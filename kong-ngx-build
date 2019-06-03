@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 SCRIPT_PATH=$(dirname "$(realpath $0)")
 PREFIX=
@@ -165,7 +166,6 @@ main() {
           echo "$OPENSSL_SHA openssl-$OPENSSL_VER.tar.gz" | sha256sum -c -
         fi
         tar -xzvf openssl-$OPENSSL_VER.tar.gz
-        ln -s $OPENSSL_DOWNLOAD $DOWNLOAD_CACHE/openssl
       popd
     fi
 
@@ -221,7 +221,6 @@ main() {
           echo "$OPENRESTY_SHA openresty-$OPENRESTY_VER.tar.gz" | sha256sum -c -
         fi
         tar -xzvf openresty-$OPENRESTY_VER.tar.gz
-        ln -s $OPENRESTY_DOWNLOAD $DOWNLOAD_CACHE/openresty
       popd
     fi
 
@@ -243,7 +242,6 @@ main() {
             echo "$PCRE_SHA pcre-${PCRE_VER}.tar.gz" | sha256sum -c -
           fi
           tar -xzvf pcre-${PCRE_VER}.tar.gz
-          ln -s $PCRE_LOCATION $DOWNLOAD_CACHE/pcre
         popd
       fi
     fi
@@ -329,7 +327,6 @@ main() {
             echo "$LUAROCKS_SHA luarocks-$LUAROCKS_VER.tar.gz" | sha256sum -c -
           fi
           tar -xzvf luarocks-$LUAROCKS_VER.tar.gz
-          ln -s $LUAROCKS_DOWNLOAD $DOWNLOAD_CACHE/luarocks
         popd
       fi
 
@@ -338,14 +335,14 @@ main() {
       pushd $LUAROCKS_DOWNLOAD
         if [ ! -f config.unix ]; then
           ./configure \
-            --lua-suffix=jit \
-            --with-lua=/tmp/build/usr/local/openresty/luajit \
-            --with-lua-include=/tmp/build/usr/local/openresty/luajit/include/luajit-2.1
+            --prefix=/usr/local \
+            --with-lua=$PREFIX/usr/local/openresty/luajit \
+            --with-lua-include=$PREFIX/usr/local/openresty/luajit/include/luajit-2.1
         fi
 
-        make build
-        make install
+        make
         make install DESTDIR=${PREFIX}
+        make install
       popd
 
       succ "LuaRocks $LUAROCKS_VER has been built successfully!"
