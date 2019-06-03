@@ -153,7 +153,7 @@ main() {
 
   notice "Building the components now..."
 
-  OPENSSL_INSTALL=$PREFIX/openssl
+  OPENSSL_INSTALL=$PREFIX/usr/local/kong
   OPENRESTY_INSTALL=$PREFIX/openresty
 
   if [ ! -d $OPENSSL_INSTALL ]; then
@@ -165,6 +165,7 @@ main() {
           echo "$OPENSSL_SHA openssl-$OPENSSL_VER.tar.gz" | sha256sum -c -
         fi
         tar -xzvf openssl-$OPENSSL_VER.tar.gz
+        ln -s $OPENSSL_DOWNLOAD $DOWNLOAD_CACHE/openssl
       popd
     fi
 
@@ -173,8 +174,9 @@ main() {
     pushd $OPENSSL_DOWNLOAD
       if [[ ($OPENSSL_VER == 1.0.* && ! -d include/openssl) || ! -f Makefile ]]; then
           OPENSSL_OPTS=(
-            "shared"
+            "-fPIC shared"
             "--prefix=$OPENSSL_INSTALL"
+            "--openssldir=$OPENSSL_INSTALL"
           )
 
           if [[ $OPENSSL_VER == 1.1.* ]]; then
@@ -219,6 +221,7 @@ main() {
           echo "$OPENRESTY_SHA openresty-$OPENRESTY_VER.tar.gz" | sha256sum -c -
         fi
         tar -xzvf openresty-$OPENRESTY_VER.tar.gz
+        ln -s $OPENRESTY_DOWNLOAD $DOWNLOAD_CACHE/openresty
       popd
     fi
 
@@ -240,6 +243,7 @@ main() {
             echo "$PCRE_SHA pcre-${PCRE_VER}.tar.gz" | sha256sum -c -
           fi
           tar -xzvf pcre-${PCRE_VER}.tar.gz
+          ln -s $PCRE_LOCATION $DOWNLOAD_CACHE/pcre
         popd
       fi
     fi
@@ -251,9 +255,8 @@ main() {
     pushd $OPENRESTY_DOWNLOAD
       if [ ! -f Makefile ]; then
         OPENRESTY_OPTS=(
-          "--prefix=$OPENRESTY_INSTALL"
           "--with-cc-opt='-I$OPENSSL_INSTALL/include'"
-          "--with-ld-opt='-L$OPENSSL_INSTALL/lib -Wl,-rpath,$OPENSSL_INSTALL/lib'"
+          "--with-ld-opt='-L$OPENSSL_INSTALL/lib -Wl,-rpath,/usr/local/kong/lib'"
           "--with-pcre-jit"
           "--with-http_ssl_module"
           "--with-http_realip_module"
@@ -261,7 +264,6 @@ main() {
           "--with-http_v2_module"
           "--with-stream_ssl_preread_module"
           "--with-stream_realip_module"
-          "-j$NPROC"
         )
         
         if [ ! -z "$PCRE_VER" ]; then
@@ -299,11 +301,11 @@ main() {
           fi
         fi
 
-        eval ./configure ${OPENRESTY_OPTS[*]}
+        eval ./configure -j$NPROC ${OPENRESTY_OPTS[*]}
       fi
 
       make -j$NPROC
-      make install
+      make install -j$NPROC DESTDIR=${PREFIX}
     popd
 
     succ "OpenResty $OPENRESTY_VER has been built successfully!"
@@ -327,6 +329,7 @@ main() {
             echo "$LUAROCKS_SHA luarocks-$LUAROCKS_VER.tar.gz" | sha256sum -c -
           fi
           tar -xzvf luarocks-$LUAROCKS_VER.tar.gz
+          ln -s $LUAROCKS_DOWNLOAD $DOWNLOAD_CACHE/luarocks
         popd
       fi
 
@@ -335,14 +338,14 @@ main() {
       pushd $LUAROCKS_DOWNLOAD
         if [ ! -f config.unix ]; then
           ./configure \
-            --prefix=$LUAROCKS_INSTALL \
             --lua-suffix=jit \
-            --with-lua=$OPENRESTY_INSTALL/luajit \
-            --with-lua-include=$OPENRESTY_INSTALL/luajit/include/luajit-2.1
+            --with-lua=/tmp/build/usr/local/openresty/luajit \
+            --with-lua-include=/tmp/build/usr/local/openresty/luajit/include/luajit-2.1
         fi
 
-        make build -j$NPROC
+        make build
         make install
+        make install DESTDIR=${PREFIX}
       popd
 
       succ "LuaRocks $LUAROCKS_VER has been built successfully!"
