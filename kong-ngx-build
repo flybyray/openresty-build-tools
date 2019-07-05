@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 SCRIPT_PATH=$(dirname "$(realpath $0)")
 PREFIX=
@@ -154,8 +155,8 @@ main() {
   OPENSSL_PREFIX=${OPENSSL_PREFIX:-$PREFIX/openssl}
   OPENRESTY_PREFIX=${OPENRESTY_PREFIX:-$PREFIX/openresty}
 
-  OPENSSL_INSTALL=$(realpath -m $OPENSSL_DESTDIR/$OPENSSL_PREFIX)
-  OPENRESTY_INSTALL=$(realpath -m $OPENRESTY_DESTDIR/$OPENRESTY_PREFIX)
+  OPENSSL_INSTALL=$(realpath $OPENSSL_DESTDIR/$OPENSSL_PREFIX)
+  OPENRESTY_INSTALL=$(realpath $OPENRESTY_DESTDIR/$OPENRESTY_PREFIX)
 
   notice "Downloading the components now..."
 
@@ -212,7 +213,7 @@ main() {
     if [ ! -z "$LUAROCKS_VER" ]; then
       LUAROCKS_DESTDIR=${LUAROCKS_DESTDIR:-/}
       LUAROCKS_PREFIX=${LUAROCKS_PREFIX:-$PREFIX/luarocks}
-      LUAROCKS_INSTALL=$(realpath -m $LUAROCKS_DESTDIR/$LUAROCKS_PREFIX)
+      LUAROCKS_INSTALL=$(realpath $LUAROCKS_DESTDIR/$LUAROCKS_PREFIX)
       if [ ! -f $LUAROCKS_INSTALL/bin/luarocks ]; then
         LUAROCKS_DOWNLOAD=$DOWNLOAD_CACHE/luarocks-$LUAROCKS_VER
         if [ ! -d $LUAROCKS_DOWNLOAD ]; then
