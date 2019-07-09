@@ -356,7 +356,7 @@ main() {
         fi
 
         if [ ! -z "$PCRE_VER" ]; then
-          OPENRESTY_OPTS+=('--with-pcre=$PCRE_DOWNLOAD')
+          OPENRESTY_OPTS+=("--with-pcre=$PCRE_DOWNLOAD")
         fi
 
         OPENRESTY_OPTS+=(${NGINX_EXTRA_MODULES[@]})
