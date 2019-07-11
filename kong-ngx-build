@@ -378,6 +378,10 @@ main() {
   else
     succ "OpenResty $OPENRESTY_VER has been built successfully (cached)!"
   fi
+  
+  if [ ! -z "$OPENRESTY_DESTDIR" ]; then
+    ln -s "$OPENRESTY_INSTALL" "$OPENRESTY_PREFIX"
+  fi
 
   # Building LuaRocks
 
@@ -389,9 +393,8 @@ main() {
         if [ ! -f config.unix ]; then
           ./configure \
             --prefix=$LUAROCKS_PREFIX \
-            --lua-suffix=jit \
-            --with-lua=$OPENRESTY_INSTALL/luajit \
-            --with-lua-include=$OPENRESTY_INSTALL/luajit/include/luajit-2.1
+            --with-lua=$OPENRESTY_PREFIX/luajit \
+            --with-lua-include=$OPENRESTY_PREFIX/luajit/include/luajit-2.1
         fi
 
         make build -j$NPROC
